@@ -34,5 +34,3 @@ meteor profile -i "$mapping_dir/$fname/$fname" -o "$profile_dir/$fname" -r "$ref
  echo "meteor finished sample $fname"
 fi
 done
-strain_dir="$dir3/test_meteor/strain_profiling"
-tree_dir="$dir3/test_meteor/strain_comparison"
