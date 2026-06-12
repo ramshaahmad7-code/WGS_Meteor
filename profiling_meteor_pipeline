@@ -23,6 +23,7 @@ ref_dir="$dir3/test_meteor/reference_hs_oral_meteor/hs_8_4_oral"
 mapping_dir="$dir3/test_meteor/gene_mapping"
 profile_dir="$dir3/test_meteor/functional_mapping"
 merge_dir="$dir3/test_meteor/merger_profiling"
+strain_dir="$dir3/test_meteor/strain_profiling"
 
 for i in $mapping_dir/*; do
 fname=$(basename "$i")
@@ -34,3 +35,4 @@ meteor profile -i "$mapping_dir/$fname/$fname" -o "$profile_dir/$fname" -r "$ref
  echo "meteor finished sample $fname"
 fi
 done
+tree_dir="$dir3/test_meteor/strain_comparison"
