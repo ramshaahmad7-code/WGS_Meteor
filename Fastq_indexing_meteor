@@ -1,0 +1,45 @@
+#!/bin/bash
+#SBATCH -t 1:00:00
+#SBATCH -J pipeline_meteor_ramshaa
+#SBATCH -N 1
+#SBATCH --ntasks=12   
+#SBATCH --cpus-per-task=2
+#SBATCH -o %j.out
+#SBATCH -e %j.err
+#SBATCH --mail-user=raahamd@tcd.ie
+#SBATCH --mail-type=END,FAIL
+
+salloc -N 1 -p compute -t 4:00:00
+#  AGAIN RESTARTING 
+ module purge
+ module load anaconda3/
+ source $(conda info --base)/etc/profile.d/conda.sh
+ conda activate meteor
+
+ # Start with defining directories 
+dir3="/home/users/raahmad/ramsha/ramsha/shotgun1"
+#input_dir="$dir3/KNEADDATA/$fname/Bowtie-2"
+input_dir="/home/users/raahmad/ramsha/ramsha/shotgun1/KNEADDATA/cleaned_reads"
+output_dir="/home/users/raahmad/ramsha/ramsha/shotgun1/test_meteor/fastq_indexing"
+ref_dir="$dir3/test_meteor/reference_hs_oral_meteor/hs_8_4_oral"
+mapping_dir="$dir3/test_meteor/gene_mapping"
+profile_dir="$dir3/test_meteor/functional_mapping"
+merge_dir="$dir3/test_meteor/merger_profiling"
+strain_dir="$dir3/test_meteor/strain_profiling"
+tree_dir="$dir3/test_meteor/strain_comparison"
+
+meteor fastq -i "$input_dir" -p -m C\\d+ -o "$output_dir"  # worked for control samples as message says 46/76 fastq files imported in 23 samples
+meteor fastq -i "$input_dir" -p -m S\\d+ -o "$output_dir"  # worked for patient samples as message says 30/76 fastq files imported in 15 samples
+
+# Now since I need to redo this command for some remaining samples but at tthe same time I need to make sure that it skips which is already dome
+
+for i in $input_dir/*S; do
+    fname=$(basename "$i")
+    echo "$fname"
+
+if [ -d "$output_dir" ] && [ "$(ls -A "$output_dir" 2>/dev/null)" ]; then
+    echo "FASTQ already processed — skipping"
+else
+    meteor fastq -i "$input_dir" -p -m 'S\d+' -o "$output_dir"
+fi
+done
