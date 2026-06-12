@@ -1,0 +1,49 @@
+#!/bin/bash
+#SBATCH -t 48:00:00
+#SBATCH -J pipeline_meteor_ramshaa
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=6
+#SBATCH --cpus-per-task=4
+#SBATCH -o %j.out
+#SBATCH -e %j.err
+#SBATCH --mail-user=raahamd@tcd.ie
+#SBATCH --mail-type=END,FAIL
+
+module purge
+module load anaconda3/
+source $(conda info --base)/etc/profile.d/conda.sh
+conda activate meteor
+
+# Start with defining directories
+dir3="/home/users/raahmad/ramsha/ramsha/shotgun1"
+#input_dir="$dir3/KNEADDATA/$fname/Bowtie-2"
+input_dir="$dir3/KNEADDATA/cleaned_reads"
+output_dir="$dir3/test_meteor/fastq_indexing"
+ref_dir="$dir3/test_meteor/reference_hs_oral_meteor/hs_8_4_oral"
+mapping_dir="$dir3/test_meteor/gene_mapping"
+profile_dir="$dir3/test_meteor/functional_mapping"
+merge_dir="$dir3/test_meteor/merger_profiling"
+strain_dir="$dir3/test_meteor/strain_profiling"
+tree_dir="$dir3/test_meteor/strain_comparison"
+
+for i in "$output_dir"/*; do
+    fname=$(basename "$i")
+
+    echo "Processing $fname"
+
+  if [ ! -f "$mapping_dir/$fname/${fname}_raw.cram" ]; then
+        echo "Fixing $fname (missing CRAM)"
+
+        rm -rf "$mapping_dir/$fname"
+
+        meteor mapping -i "$output_dir/$fname" -r "$ref_dir" -o "$mapping_dir/$fname" --kf --ka -t 6
+
+        echo " Mapping completed for $fname"
+    else
+
+        echo "Skipping $fname (CRAM exists)"
+  fi
+
+done
+done
+
