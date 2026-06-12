@@ -1,0 +1,72 @@
+#!/bin/bash
+#SBATCH -t 192:00:00
+#SBATCH -J pipeline_Kneaddata_ramshaa
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=12
+#SBATCH -o %j.out
+#SBATCH -e %j.err
+#SBATCH --mail-user=raahamd@tcd.ie
+#SBATCH --mail-type=END,FAIL
+
+# Since Kneaddata uses 6 threads that is 12/6 = 2 SAMPLES
+#Number of parallel samples = Total cores requested / threads per sample  (OTHER THINGS - scontrol show job 1868 : it gives syou full description)
+# squeue -u $user_id-raahmad
+
+# define the directories
+raw_dir1="/home/users/raahmad/ramsha/ramsha"
+util="/home/users/raahmad/util"
+dir3="/home/users/raahmad/ramsha/ramsha/shotgun1"
+LOGS="/home/users/raahmad/ramsha/ramsha/shotgun1/logs"
+
+cd $dir3
+mkdir -p KNEADDATA
+mkdir -p logs
+
+
+cd $dir3/KNEADDATA
+mkdir -p unpaired
+mkdir -p cleaned_reads
+
+# Activate conda env
+module load anaconda3/2023.09-0-gcc-8.5.0-ca6zznq
+source $(dirname $(which conda))/../etc/profile.d/conda.sh
+conda activate /home/users/raahmad/util
+
+# Load modules
+module load apps
+module load staskfarm
+
+
+
+ 
+
+# change the directory
+ cd  "$dir_3"
+
+
+for R1 in "$raw_dir1"/*S_R1_001.fastq.gz; do
+base=$(basename "$R1") # removes the path from R1 variable as I only want full samplename
+base=${base%R1_*.fastq.gz} # extract only sample_id that is bash trimming ${variable%pattern} which removes pattern
+R2=( "$raw_dir1"/${base}R2_001.fastq.gz )
+
+    echo "$R1"
+    echo "$R2"
+    fname=$base
+
+  kneaddata --input1 $R1 --input2 $R2 -db "$util/KD_Homo/" --run-fastqc-start --run-fastqc-end \
+  --output "$dir3/KNEADDATA/$fname" --bowtie2-options="--very-sensitive" -t 12  
+  echo "KD finished sample $fname"
+  
+  # Moving paired fastq files to different folder 
+  mkdir -p "$dir3/KNEADDATA/$fname/Bowtie-2"
+
+  mv "$dir3/KNEADDATA/$fname/"*kneaddata_paired_1.fastq* "$dir3/KNEADDATA/$fname/Bowtie-2/"
+  mv "$dir3/KNEADDATA/$fname/"*kneaddata_paired_2.fastq* "$dir3/KNEADDATA/$fname/Bowtie-2/"
+
+  rm -rf "$dir3/KNEADDATA/$fname/"*_trimmed*.fastq
+  rm -rf "$dir3/KNEADDATA/$fname/"*.trf.*
+  rm -rf "$dir3/KNEADDATA/$fname/"*.fasta
+  rm -rf "$dir3/KNEADDATA/$fname/"*reformatted_identifiers*.fastq
+  
+done
