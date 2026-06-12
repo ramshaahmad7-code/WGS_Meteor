@@ -1,0 +1,38 @@
+#!/bin/bash
+#SBATCH -t 48:00:00
+#SBATCH -J pipeline_meteor_ramshaa
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=6
+#SBATCH --cpus-per-task=4
+#SBATCH -o %j.out
+#SBATCH -e %j.err
+#SBATCH --mail-user=raahamd@tcd.ie
+#SBATCH --mail-type=END,FAIL
+
+module purge
+module load anaconda3/
+source $(conda info --base)/etc/profile.d/conda.sh
+conda activate meteor
+
+# Start with defining directories 
+dir3="/home/users/raahmad/ramsha/ramsha/shotgun1"
+#input_dir="$dir3/KNEADDATA/$fname/Bowtie-2"
+input_dir="$dir3/KNEADDATA/cleaned_reads"
+output_dir="$dir3/test_meteor/fastq_indexing"
+ref_dir="$dir3/test_meteor/reference_hs_oral_meteor/hs_8_4_oral"
+mapping_dir="$dir3/test_meteor/gene_mapping"
+profile_dir="$dir3/test_meteor/functional_mapping"
+merge_dir="$dir3/test_meteor/merger_profiling"
+
+for i in $mapping_dir/*; do
+fname=$(basename "$i")
+if [ -d "$mapping_dir/$fname/$fname" ] && [ $(find "$mapping_dir/$fname/$fname" -type f 2>/dev/null) ]; then
+ echo "Skipping sample for $fname"
+continue
+else
+meteor profile -i "$mapping_dir/$fname/$fname" -o "$profile_dir/$fname" -r "$ref_dir" -n coverage
+ echo "meteor finished sample $fname"
+fi
+done
+strain_dir="$dir3/test_meteor/strain_profiling"
+tree_dir="$dir3/test_meteor/strain_comparison"
