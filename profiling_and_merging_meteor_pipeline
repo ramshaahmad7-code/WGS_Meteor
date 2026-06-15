@@ -36,3 +36,12 @@ meteor profile -i "$mapping_dir/$fname/$fname" -o "$profile_dir/$fname" -r "$ref
  echo "meteor finished sample $fname"
 fi
 done
+
+
+####### MERGING STEP ##########
+meteor merge \
+-i "/home/users/raahmad/ramsha/ramsha/shotgun1/test_meteor/functional_mapping" \
+-r "/home/users/raahmad/ramsha/ramsha/shotgun1/test_meteor/reference_hs_oral_meteor/hs_8_4_oral" \
+-o "/home/users/raahmad/ramsha/ramsha/shotgun1/test_meteor/merger_profiling/final_merged"
+
+
