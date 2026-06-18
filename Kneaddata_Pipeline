@@ -33,13 +33,6 @@ module load anaconda3/2023.09-0-gcc-8.5.0-ca6zznq
 source $(dirname $(which conda))/../etc/profile.d/conda.sh
 conda activate /home/users/raahmad/util
 
-# Load modules
-module load apps
-module load staskfarm
-
-
-
- 
 
 # change the directory
  cd  "$dir_3"
