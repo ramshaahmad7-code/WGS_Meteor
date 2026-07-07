@@ -1,0 +1,50 @@
+#!/bin/bash
+#SBATCH -t 96:00:00
+#SBATCH -J pipeline_meteor_ramshaa
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=4
+#SBATCH --cpus-per-task=6
+#SBATCH -o %j.out
+#SBATCH -e %j.err
+#SBATCH --mail-user=raahamd@tcd.ie
+#SBATCH --mail-type=END,FAIL
+
+
+#set -x # prints the shell command before it is been executed
+#set -e # identifies the error and exits as soon as the error occured 
+
+module purge
+module load anaconda3/
+source $(conda info --base)/etc/profile.d/conda.sh
+conda activate meteor
+# Start with defining directories
+dir3="/home/users/raahmad/ramsha/ramsha/shotgun1"
+#input_dir="$dir3/KNEADDATA/$fname/Bowtie-2"
+input_dir="$dir3/KNEADDATA/cleaned_reads"
+output_dir="$dir3/test_meteor/fastq_indexing"
+ref_dir="$dir3/test_meteor/reference_hs_oral_meteor/hs_8_4_oral"
+mapping_dir="$dir3/test_meteor/gene_mapping"
+profile_dir="$dir3/test_meteor/functional_mapping"
+merge_dir="$dir3/test_meteor/merger_profiling"
+strain_dir="$dir3/test_meteor/strain_profiling"
+tree_dir="$dir3/test_meteor/strain_comparison"
+
+for i in "$mapping_dir"/S*; do
+    fname=$(basename "$i")
+
+    echo "processing $fname"
+
+    if ls "$mapping_dir/$fname/$fname/"*.cram 2>/dev/null; then
+        echo "Running sample for strain ($fname)"
+    else
+        echo "Missing sample for strain ($fname)"
+        continue
+    fi
+
+    if meteor strain -i "$mapping_dir/$fname/$fname" -o "$strain_dir/$fname" -r "$ref_dir"; then
+        echo "strain completed for $fname"
+    else
+        echo "strain failed for $fname"
+        continue
+    fi
+done
